@@ -1,6 +1,6 @@
 # Luna's Maths Moon
 
-A maths game for young learners: adding, taking away, times tables and dividing. Get sums right to fill each moon.
+A maths game for young learners: adding, taking away, times tables, dividing, fractions and decimals. Get sums right to fill each moon.
 
 Play: https://deklerkdan.github.io/maths-moon/ (its sister game: https://deklerkdan.github.io/word-moon/)
 

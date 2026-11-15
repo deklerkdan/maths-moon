@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07080B">
-<meta name="description" content="A maths game: adding, taking away, times tables and dividing. Fill the moon.">
+<meta name="description" content="A maths game: adding, taking away, times tables, dividing, fractions and decimals. Fill the moon.">
 <title>Luna's Maths Moon</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -160,6 +160,38 @@ main{flex:1;display:flex;flex-direction:column;gap:20px}
 .slist span{color:var(--muted)}
 textarea{width:100%;min-height:72px;background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:10px;font:14px/1.4 ui-monospace,Consolas,monospace}
 input[type=range]{width:min(320px,100%);accent-color:var(--moon)}
+/* fractions and decimals */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;font-size:.62em;margin:0 .08em}
+.fr b{display:block;border-bottom:.12em solid currentColor;padding:0 .14em .06em;font-weight:inherit}
+.fr>span{display:block;padding-top:.06em}
+.fbars{display:flex;flex-direction:column;gap:8px;align-items:center;width:100%}
+.fbar{display:flex;width:min(320px,90%);height:34px;border:2px solid var(--line2);border-radius:8px;overflow:hidden;flex:none}
+.fbar i{flex:1;border-left:2px solid var(--line2)} .fbar i:first-child{border-left:0}
+.fbar i.a{background:var(--c1)} .fbar i.b{background:var(--c2)}
+.fbar i.x{background:repeating-linear-gradient(45deg,rgba(255,159,28,.45) 0 5px,transparent 5px 11px)}
+.key.wide3{grid-column:span 3}
+/* show me how, tips */
+.tools{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.toolbtn{font-family:var(--font-display);font-size:18px;padding:10px 18px;border-radius:999px;border:2px solid var(--c2);color:var(--ink);background:var(--panel)}
+.toolbtn.tip{border-color:var(--moon)}
+.teach{border-color:var(--c2)}
+.teach h3{font-size:22px;color:var(--c2)}
+.help .lines{display:flex;flex-direction:column;gap:6px;text-align:center}
+.tipcard{text-align:left;align-items:stretch}
+.tipcard h2{text-align:center}
+.tipcard ul{margin:0;padding-left:1.1em;display:flex;flex-direction:column;gap:10px;font-size:18px}
+.life{background:var(--panel2);border:1px solid var(--line2);border-radius:14px;padding:10px 14px;font-size:17px}
+.life b{color:var(--moon)}
+/* speed practice */
+.speedbtn{font-family:var(--font-display);font-weight:800;font-size:20px;padding:12px 22px;border-radius:999px;background:var(--blue);color:#04121F;box-shadow:0 0 0 4px rgba(47,155,255,.25)}
+.stat{font-family:var(--font-display);font-size:clamp(30px,8vw,44px);color:var(--moon)}
+.badges{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 14px;border-radius:18px;background:var(--panel);border:2px solid var(--moon);min-width:120px;max-width:170px;text-align:center}
+.badge span{font-size:44px;line-height:1.1} .badge b{font-size:15px;line-height:1.25}
+.shelf{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;font-size:26px}
+.shelf span{display:inline-flex;align-items:flex-end;gap:1px} .shelf small{font-size:12px;color:var(--muted)}
+.recent{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;font-size:15px;color:var(--muted)}
+.recent span{padding:2px 10px;border-radius:999px;border:1px solid var(--line)} .recent span.now{border-color:var(--moon);color:var(--moon)}
 @keyframes pop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 .pop{animation:pop .35s ease-out}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -199,13 +231,15 @@ input[type=range]{width:min(320px,100%);accent-color:var(--moon)}
 (function(){
 'use strict';
 /* =================== Skills ===================
-   Four kinds of sums, each a ladder of skills from easiest to hardest.
+   Six kinds of sums, each a ladder of skills from easiest to hardest.
    A round mixes the next skill of each kind (the first one that isn't a full moon yet). */
 const STRANDS=[
   {id:'add',  name:'Adding',       emoji:'➕'},
   {id:'sub',  name:'Taking away',  emoji:'➖'},
   {id:'times',name:'Times tables', emoji:'✖️'},
-  {id:'div',  name:'Dividing',     emoji:'➗'}
+  {id:'div',  name:'Dividing',     emoji:'➗'},
+  {id:'frac', name:'Fractions',    emoji:'🍕'},
+  {id:'dec',  name:'Decimals',     emoji:'📏'}
 ];
 const SKILLS=[
   {id:'add10',   strand:'add', name:'Adding to 10',          ex:'4 + 5'},
@@ -230,7 +264,14 @@ const SKILLS=[
   {id:'d2510', strand:'div', name:'Dividing by 2, 5 and 10', by:[2,5,10], ex:'20 ÷ 5'},
   {id:'d34',   strand:'div', name:'Dividing by 3 and 4',     by:[3,4],    ex:'24 ÷ 3'},
   {id:'d67',   strand:'div', name:'Dividing by 6 and 7',     by:[6,7],    ex:'42 ÷ 7'},
-  {id:'d89',   strand:'div', name:'Dividing by 8 and 9',     by:[8,9],    ex:'72 ÷ 9'}
+  {id:'d89',   strand:'div', name:'Dividing by 8 and 9',     by:[8,9],    ex:'72 ÷ 9'},
+  {id:'fadd', strand:'frac', name:'Adding fractions',      ex:'1/4 + 2/4'},
+  {id:'fsub', strand:'frac', name:'Taking away fractions', ex:'5/8 − 2/8'},
+  {id:'fhq',  strand:'frac', name:'Halves and quarters',   ex:'1/2 + 1/4'},
+  {id:'dadd1', strand:'dec', name:'Adding tenths',         ex:'0.3 + 0.4'},
+  {id:'dsub1', strand:'dec', name:'Taking away tenths',    ex:'0.9 − 0.4'},
+  {id:'dadd2', strand:'dec', name:'Adding decimals',       ex:'1.5 + 2.7'},
+  {id:'dsub2', strand:'dec', name:'Taking away decimals',  ex:'3.6 − 1.8'}
 ];
 const SK={}; SKILLS.forEach(s=>SK[s.id]=s);
 const STEP=4, FULL=12;                 /* 4 right -> crescent, 8 -> half, 12 -> full */
@@ -242,7 +283,22 @@ const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(M
 const SYM={'+':'+','-':'−','x':'×','/':'÷'};
 const WORD={'+':'plus','-':'take away','x':'times','/':'divided by'};
 
-/* Make one sum for a skill: {a, op, b, ans} */
+/* Numbers of each kind. Decimals are kept as whole tenths (1.3 is 13) so the sums are exact.
+   A fraction sum is answered as the top number over a bottom number that is given (q.d). */
+const fmtDec=t=>t%10===0 ? String(t/10) : (t/10).toFixed(1);
+const tenths=n=>n===1?'1 tenth':n+' tenths';
+const FRN={2:['half','halves'],3:['third','thirds'],4:['quarter','quarters'],5:['fifth','fifths'],6:['sixth','sixths'],8:['eighth','eighths'],10:['tenth','tenths']};
+const frSay=(n,d)=>n+' '+FRN[d][n===1?0:1];
+const frHTML=(n,d)=>`<span class="fr"><b>${n}</b><span>${d}</span></span>`;
+function valHTML(q,w){ if(q.kind==='frac'){ const f=w==='a'?q.fa:q.fb; return frHTML(f.n,f.d); } return q.kind==='dec'?fmtDec(q[w]):String(q[w]); }
+const ansHTML=(q,v)=>q.kind==='frac'?frHTML(v,q.d) : q.kind==='dec'?fmtDec(v) : String(v);
+const ansSay=(q,v)=>q.kind==='frac'?frSay(v,q.d) : q.kind==='dec'?fmtDec(v) : String(v);
+const sumHTML=q=>valHTML(q,'a')+' '+SYM[q.op]+' '+valHTML(q,'b');
+const sumSpeech=q=>q.kind==='frac' ? frSay(q.fa.n,q.fa.d)+' '+WORD[q.op]+' '+frSay(q.fb.n,q.fb.d)
+  : (q.kind==='dec'?fmtDec(q.a):q.a)+' '+WORD[q.op]+' '+(q.kind==='dec'?fmtDec(q.b):q.b);
+const sumKey=q=>q.kind==='frac' ? q.fa.n+'/'+q.fa.d+q.op+q.fb.n+'/'+q.fb.d : q.a+q.op+q.b;
+
+/* Make one sum for a skill */
 function makeSum(id){
   const s=SK[id]; let a,b,op;
   switch(id){
@@ -259,25 +315,34 @@ function makeSum(id){
     case 'subtens': op='-'; a=10*ri(2,10); b=10*ri(1,a/10-1); break;
     case 'sub2d1d': op='-'; a=ri(21,99); b=ri(2,9); break;
     case 'sub2d2d': op='-'; a=ri(31,99); b=ri(11,a-10); break;
+    case 'fadd': { const d=pick([3,4,5,6,8,10]); const x=ri(1,d-1), y=ri(1,d-x); return {skill:id,kind:'frac',op:'+',fa:{n:x,d},fb:{n:y,d},d,ans:x+y}; }
+    case 'fsub': { const d=pick([3,4,5,6,8,10]); const x=ri(2,d), y=ri(1,x-1); return {skill:id,kind:'frac',op:'-',fa:{n:x,d},fb:{n:y,d},d,ans:x-y}; }
+    case 'fhq': { /* halves and quarters, answered in quarters */
+      const H={n:1,d:2}, Q=n=>({n,d:4});
+      const all=[[H,'+',Q(1)],[Q(1),'+',H],[H,'+',Q(2)],[H,'+',H],[Q(3),'-',H],[H,'-',Q(1)],[Q(4),'-',H],[Q(2),'+',H]];
+      const [fa,o,fb]=pick(all), qa=fa.n*4/fa.d, qb=fb.n*4/fb.d;
+      return {skill:id,kind:'frac',op:o,fa,fb,d:4,ans:o==='+'?qa+qb:qa-qb}; }
+    case 'dadd1': a=ri(1,8); b=ri(1,9-a); return {skill:id,kind:'dec',op:'+',a,b,ans:a+b};
+    case 'dsub1': a=ri(2,9); b=ri(1,a-1); return {skill:id,kind:'dec',op:'-',a,b,ans:a-b};
+    case 'dadd2': do{ a=ri(1,49); b=ri(1,49); }while(a%10===0||b%10===0||(a<10&&b<10&&a+b<10)); return {skill:id,kind:'dec',op:'+',a,b,ans:a+b};
+    case 'dsub2': do{ a=ri(11,59); b=ri(1,a-1); }while(a%10===0||b%10===0); return {skill:id,kind:'dec',op:'-',a,b,ans:a-b};
     default:
       if(s.n){ op='x'; const k=ri(1,10); if(Math.random()<0.5){ a=s.n; b=k; } else { a=k; b=s.n; } }
       else if(s.by){ op='/'; b=pick(s.by); const q=ri(1,10); a=b*q; }
   }
   const ans = op==='+'?a+b : op==='-'?a-b : op==='x'?a*b : a/b;
-  return {skill:id, a, op, b, ans};
+  return {skill:id, kind:'int', a, op, b, ans};
 }
-const sumKey=q=>q.a+q.op+q.b;
-const sumText=q=>q.a+' '+SYM[q.op]+' '+q.b;
-const sumSpeech=q=>q.a+' '+WORD[q.op]+' '+q.b;
 
 /* Two wrong answers that look likely, for the big buttons. */
 function wrongOnes(q){
-  const A=q.ans, c=[];
-  if(q.op==='x'){ const n=SK[q.skill].n, k=q.a===n?q.b:q.a; c.push(n*(k+1), n*(k-1), A+1, A-1, (n+1)*k); }
-  else if(q.op==='/'){ c.push(A+1, A-1, A+2, A-2); }
-  else { c.push(A+1, A-1, A+2, A-2); if(A>=20) c.push(A+10, A-10); }
-  const ok=shuffle([...new Set(c)].filter(x=>x>=0 && x!==A && Number.isInteger(x)));
-  while(ok.length<2) ok.push(A+ok.length+3);
+  const A=q.ans; let c=[], ok;
+  if(q.kind==='frac'){ c=[A+1,A-1,A+2,A-2]; ok=c.filter(x=>x>=0&&x<=q.d); }
+  else if(q.kind==='dec'){ c=[A+1,A-1,A+10,A-10,A+2]; ok=c.filter(x=>x>0); }
+  else if(q.op==='x'){ const n=SK[q.skill].n, k=q.a===n?q.b:q.a; ok=[n*(k+1), n*(k-1), A+1, A-1, (n+1)*k].filter(x=>x>=0); }
+  else { c=[A+1,A-1,A+2,A-2]; if(A>=20) c.push(A+10,A-10); ok=c.filter(x=>x>=0); }
+  ok=shuffle([...new Set(ok)].filter(x=>x!==A && Number.isInteger(x)));
+  for(let x=0; ok.length<2; x++) if(x!==A && !ok.includes(x)) ok.push(x);
   return ok.slice(0,2);
 }
 
@@ -287,7 +352,7 @@ const STORE='luna-maths-moon-v1', NAMES_KEY='luna-maths-moon-names', WHO_KEY='lu
 const lsGet=(k,d)=>{ try{ const v=localStorage.getItem(k); return v==null?d:JSON.parse(v); }catch(e){ return d; } };
 const lsSet=(k,v)=>{ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
 const slugName=n=>String(n).trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'player';
-const blank=()=>({v:1, rate:0.95, sound:true, deviceVoice:'', perRound:12, kinds:{add:true,sub:true,times:true,div:true}, skills:{}, days:{}, turn:0, updatedAt:0});
+const blank=()=>({v:1, rate:0.95, sound:true, deviceVoice:'', perRound:12, kinds:{add:true,sub:true,times:true,div:true,frac:true,dec:true}, skills:{}, days:{}, turn:0, updatedAt:0});
 const migrate=s=>(s && s.v===1) ? Object.assign(blank(), s, {kinds:Object.assign(blank().kinds, s.kinds||{})}) : null;
 let players=lsGet(NAMES_KEY,[]);
 let who=lsGet(WHO_KEY,null);
@@ -297,11 +362,14 @@ if(who && players.some(p=>p.id===who)) loadLocal(who); else who=null;
 function save(){ state.updatedAt=Date.now(); if(who) lsSet(STORE+':'+who, state); }
 const playerName=()=>{ const p=players.find(x=>x.id===who); return p?p.name:''; };
 
+/* per skill: pts (moon), right, wrong, helped (right after "Show me how"), trusted (I know it all),
+   times (ms for the last 20 right answers, measured quietly), speed {runs, best, fastest, badges} */
 const rec=id=>state.skills[id]||(state.skills[id]={pts:0, right:0, wrong:0, trusted:0, last:0});
 const ptsOf=id=>(state.skills[id]&&state.skills[id].pts)||0;
 const phaseOf=id=>{ const p=ptsOf(id); return p>=FULL?3 : p>=2*STEP?2 : p>=STEP?1 : 0; };
-/* the next skill of a kind: the first one that isn't a full moon yet */
 const nextOf=strand=>SKILLS.find(s=>s.strand===strand && phaseOf(s.id)<3)||null;
+const median=a=>{ if(!a||!a.length) return null; const s=a.slice().sort((x,y)=>x-y), m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+const secs=ms=>(ms/1000).toFixed(1);
 
 const $=(s,el=document)=>el.querySelector(s);
 const stage=$('#stage');
@@ -386,6 +454,9 @@ async function say(items, opts){
 }
 function hush(){ sayToken++; try{ canBrowser && speechSynthesis.cancel(); }catch(e){} browserSpeaking=false; updateStop(); }
 function updateStop(){ const b=$('#stopBtn'); if(b) b.hidden=!browserSpeaking; }
+/* written maths into words a voice reads well */
+const speakify=t=>String(t).replace(/<[^>]+>/g,'').replace(/−/g,' take away ').replace(/×/g,' times ').replace(/÷/g,' divided by ')
+  .replace(/→/g,', then ').replace(/(^|\s)\?(?=\s|$|[.,])/g,'$1what').replace(/=/g,' is ');
 
 /* little sounds (no files needed) */
 let actx=null;
@@ -394,7 +465,7 @@ function chime(kind){
   try{
     actx=actx||new (window.AudioContext||window.webkitAudioContext)();
     if(actx.state==='suspended') actx.resume();
-    const notes=kind==='good'?[660,880]:kind==='full'?[523,659,784,1047]:kind==='up'?[587,740,880]:[300,250];
+    const notes=kind==='good'?[660,880]:kind==='full'?[523,659,784,1047]:kind==='up'?[587,740,880]:kind==='tick'?[880]:[300,250];
     notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(); o.type='sine'; o.frequency.value=f;
       const t=actx.currentTime+i*0.11; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.35);
       o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+0.4); });
@@ -410,16 +481,175 @@ function toast(text, sound){
   clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2600);
 }
 
+/* =================== Show me how ===================
+   A picture and short steps for one sum. With show=false (the ❓ button, before answering) the final answer is a "?". */
+function dotsHTML(groups, size){
+  const all=[]; groups.forEach(g=>{ for(let i=0;i<g.n;i++) all.push(g.cls||''); });
+  const rows=[]; for(let i=0;i<all.length;i+=5){ const r=all.slice(i,i+5); rows.push('<div class="drow">'+r.map(c=>`<span class="d ${c}"></span>`).join('')+'</div>'); }
+  return `<div class="dots" style="--ds:${size||18}px">${rows.join('')}</div>`;
+}
+function arrayHTML(rowsN, colsN){
+  const size = colsN*rowsN>50 ? 10 : colsN>8||rowsN>8 ? 12 : 16;
+  return `<div class="dots" style="--ds:${size}px;gap:${size<12?3:5}px">${Array.from({length:rowsN},()=>'<div class="drow">'+Array.from({length:colsN},()=>'<span class="d"></span>').join('')+'</div>').join('')}</div>`;
+}
+function countHTML(step, to, show){ const c=[]; for(let v=step; v<=to; v+=step) c.push(`<span class="${v===to?'end':''}">${(v===to&&!show)?'?':v}</span>`); return `<div class="count">${c.join('')}</div>`; }
+function barHTML(d, cls){ return `<div class="fbar">${Array.from({length:d},(_,i)=>`<i class="${cls[i]||''}"></i>`).join('')}</div>`; }
+const fill=(n,c)=>Array(Math.max(0,n)).fill(c);
+function method(q, show){
+  const M=v=>show?v:'?', ans=q.ans, L=[]; let pic='';
+  if(q.kind==='frac'){
+    const {fa,fb,d,op}=q, sign=op==='+'?'+':'−';
+    if(q.skill==='fhq'){
+      const qa=fa.n*4/fa.d, qb=fb.n*4/fb.d;
+      pic=`<div class="fbars">${barHTML(2,['a'])}${barHTML(4,['a','a'])}</div>`;
+      L.push('One half is the same as two quarters.');
+      L.push(`So ${frSay(fa.n,fa.d)} ${WORD[op]} ${frSay(fb.n,fb.d)} is the same as ${frSay(qa,4)} ${WORD[op]} ${frSay(qb,4)}.`);
+      L.push(`${qa} ${sign} ${qb} = ${M(ans)}, so it’s ${show?frSay(ans,4):'? quarters'}.`);
+      if(show && ans===4) L.push('4 quarters make one whole!');
+    } else {
+      pic = op==='+' ? barHTML(d, fill(fa.n,'a').concat(fill(fb.n,'b'))) : barHTML(d, fill(fa.n-fb.n,'a').concat(fill(fb.n,'x')));
+      L.push(`The whole is cut into ${d} equal pieces, called ${FRN[d][1]}.`);
+      L.push(op==='+' ? `${frSay(fa.n,d)} + ${frSay(fb.n,d)} = ${show?frSay(ans,d):'? '+FRN[d][1]}.` : `Start with ${frSay(fa.n,d)}. Take away ${fb.n}. So ${show?frSay(ans,d):'? '+FRN[d][1]} are left.`);
+      L.push(`The pieces stay the same size, so the bottom number stays ${d}.`);
+      if(show && ans===d) L.push(`${d} ${FRN[d][1]} make one whole!`);
+    }
+  } else if(q.kind==='dec'){
+    const {a,b,op}=q, sign=op==='+'?'+':'−';
+    if(a<=10 && (op==='-' || a+b<=10)) pic = op==='+' ? barHTML(10, fill(a,'a').concat(fill(b,'b'))) : barHTML(10, fill(a-b,'a').concat(fill(b,'x')));
+    L.push(`Think in tenths: ${fmtDec(a)} is ${tenths(a)} and ${fmtDec(b)} is ${tenths(b)}.`);
+    L.push(`${a} ${sign} ${b} = ${M(ans)} tenths.`);
+    if(show) L.push(ans>=10 && ans%10 ? `10 tenths make 1 whole, so ${ans} tenths is ${Math.floor(ans/10)} and ${tenths(ans%10)}: ${fmtDec(ans)}.` : ans%10===0 ? `${ans} tenths is ${ans/10} whole${ans===10?'':'s'}: ${fmtDec(ans)}.` : `${tenths(ans)} is ${fmtDec(ans)}.`);
+    else L.push(ans>=10 ? '10 tenths make 1 whole. Then put the dot back in.' : 'Then write it with the dot: tenths go after the dot.');
+  } else {
+    const {a,b,op}=q;
+    if(op==='+'){
+      if(a<=10 && b<=10){ pic=`<div class="dgroups">${dotsHTML([{n:a}])}<span>+</span>${dotsHTML([{n:b,cls:'b'}])}</div>`; L.push(`${a} and ${b} more makes ${M(ans)}.`); }
+      else if(a%10===0 && b%10===0) L.push(`${a/10} tens + ${b/10} tens = ${M(ans/10)} tens.`);
+      else { const big=Math.max(a,b), small=Math.min(a,b);
+        if(small<10){ const ones=big%10, toTen=10-ones;
+          if(ones+small<10){ L.push(`Add the ones: ${ones} + ${small} = ${ones+small}.`); L.push(`The tens stay the same, so ${big} + ${small} = ${M(ans)}.`); }
+          else if(small===toTen) L.push(`${big} needs ${toTen} more to make the next ten, so ${big} + ${small} = ${M(ans)}.`);
+          else L.push(`${big} + ${toTen} = ${big+toTen}, then ${small-toTen} more makes ${M(ans)}.`); }
+        else { const ta=Math.floor(a/10)*10, tb=Math.floor(b/10)*10, t=ta+tb, o=a%10+b%10;
+          L.push(`Tens: ${ta} + ${tb} = ${t}.`); L.push(`Ones: ${a%10} + ${b%10} = ${o}.`); L.push(`${t} + ${o} = ${M(ans)}.`); } }
+    } else if(op==='-'){
+      if(a<=20){ pic=dotsHTML([{n:ans},{n:b,cls:'x'}]); L.push(`Start with ${a}, take away ${b}. ${M(ans)} are left.`); }
+      else if(a%10===0 && b%10===0) L.push(`${a/10} tens − ${b/10} tens = ${M(ans/10)} tens.`);
+      else if(b<10){ const ones=a%10;
+        if(b<=ones){ L.push(`Take the ones: ${ones} − ${b} = ${ones-b}.`); L.push(`The tens stay the same, so ${a} − ${b} = ${M(ans)}.`); }
+        else L.push(`${a} − ${ones} = ${a-ones}, then take away ${b-ones} more: ${M(ans)}.`); }
+      else { const tens=Math.floor(b/10)*10, mid=a-tens; L.push(`Take the tens: ${a} − ${tens} = ${mid}.`); L.push(`Then the ones: ${mid} − ${b%10} = ${M(ans)}.`); }
+    } else if(op==='x'){ const n=SK[q.skill].n, k=a===n?b:a;
+      pic=arrayHTML(k,n); L.push(`${k} lot${k===1?'':'s'} of ${n}. Count in ${n}s, ${k} times:`); pic+=countHTML(n,ans,show);
+    } else {
+      L.push(`How many ${b}s make ${a}? Count in ${b}s until you get to ${a}:`); pic=countHTML(b,a,true);
+      L.push(show?`That’s ${ans} jump${ans===1?'':'s'}, so ${ans} lots of ${b}.`:'Count the jumps. That’s the answer!');
+      if(show) pic+=arrayHTML(ans,b);
+    }
+  }
+  return {pic, lines:L, eq:`<div class="eq">${sumHTML(q)} = ${show?ansHTML(q,ans):'?'}</div>`};
+}
+function methodHTML(q, show, title){
+  const m=method(q,show);
+  return `<div class="help${show?'':' teach'}">${title?`<h3>${title}</h3>`:''}${m.pic}<div class="lines">${m.lines.map(l=>`<p>${esc(l)}</p>`).join('')}</div>${m.eq}</div>`;
+}
+
+/* =================== Tips and tricks ===================
+   Extra ways of thinking about a sum, plus where it turns up in real life. Optional. */
+function tipsFor(q, show){
+  const s=SK[q.skill], T=[], M=v=>show?v:'?', ans=q.ans, {a,b,op}=q;
+  if(s.strand==='add'){
+    if(q.skill==='add10') T.push('Learn the friends of 10: 1 + 9, 2 + 8, 3 + 7, 4 + 6 and 5 + 5. They help with lots of bigger sums.');
+    if(a===b && a<=10) T.push(`Doubles are easy to remember: ${a} + ${a} = ${M(ans)}.`);
+    else if(Math.abs(a-b)===1 && a<=10 && b<=10){ const lo=Math.min(a,b); T.push(`Near doubles: ${lo} + ${lo} = ${2*lo}, so ${a} + ${b} is just one more.`); }
+    if(q.skill==='add20' && a<=10 && b<=10){ const big=Math.max(a,b), small=Math.min(a,b), need=10-big; if(need>0 && small>need) T.push(`Make a ten: ${big} + ${need} = 10. Then add the ${small-need} left over.`); }
+    const nine=[a,b].find(x=>x%10===9 && x<100);
+    if(nine && q.skill!=='addtens') T.push(`Adding ${nine}? Add ${nine+1} instead, then take 1 away.`);
+    if(q.skill==='addtens') T.push(`Tens work just like ones: ${a/10} + ${b/10} = ${M(ans/10)}, so ${a/10} tens + ${b/10} tens = ${M(ans/10)} tens.`);
+    if(q.skill==='add2d1d') T.push('Only the ones change, unless they go past 10. Then the tens go up by one.');
+    if(q.skill==='add2d2d'){ T.push('Split both numbers into tens and ones. Add the tens, add the ones, then put them together.');
+      const near=[a,b].find(x=>x%10>=8); if(near){ const up=Math.ceil(near/10)*10, other=near===a?b:a; T.push(`Round and fix: ${near} is close to ${up}. Do ${other} + ${up}, then take ${up-near} away.`); } }
+    if(a!==b) T.push(`Turnaround: ${a} + ${b} is the same as ${b} + ${a}. Start with the bigger number and count on.`);
+  }
+  else if(s.strand==='sub'){
+    T.push(`Think of the adding fact: ${b} + ? = ${a}. What do you add to ${b} to make ${a}?`);
+    if(q.skill==='subtens') T.push(`Tens work just like ones: ${a/10} − ${b/10} = ${M(ans/10)}, so it’s ${M(ans/10)} tens.`);
+    else if(b<10 && a>10 && b>a%10) T.push(`Jump back to the ten first: ${a} − ${a%10} = ${a-a%10}. Then take away the other ${b-a%10}.`);
+    if(q.skill==='sub2d2d'){ const up=Math.ceil(b/10)*10;
+      T.push(up>b ? `Count up, like a shopkeeper giving change: from ${b} to ${up} is ${up-b}, then from ${up} to ${a} is ${M(a-up)}. Add the two jumps.` : `Count up from ${b} to ${a} in tens, then ones.`); }
+    if(b%10===9) T.push(`Taking away ${b}? Take away ${b+1}, then add 1 back.`);
+    if(a-b<=4 && a>5) T.push(`${a} and ${b} are close together, so count up from ${b} to ${a}.`);
+    else if(b<=3) T.push(`Taking away a small number? Just count back ${b} from ${a}.`);
+  }
+  else if(s.strand==='times'){
+    const n=s.n, k=a===n?b:a;
+    const t={2:[`Times 2 is doubling. Double ${k} is ${M(2*k)}.`],
+      5:['The 5 times table always ends in 5 or 0.', `Times 5 is half of times 10: ${k} × 10 = ${10*k}, and half of that is ${M(5*k)}.`],
+      10:[`Times 10: every digit moves one place bigger and a 0 fills the ones. ${k} becomes ${M(10*k)}.`],
+      3:[`Times 3 is double, plus one more lot: ${2*k} + ${k} = ${M(3*k)}.`],
+      4:[`Times 4 is double, then double again: ${k} → ${2*k} → ${M(4*k)}.`],
+      6:[`Times 6 is times 5, plus one more lot: ${5*k} + ${k} = ${M(6*k)}.`],
+      7:[`Times 7 is times 5 plus times 2: ${5*k} + ${2*k} = ${M(7*k)}.`],
+      8:[`Times 8: double three times. ${k} → ${2*k} → ${4*k} → ${M(8*k)}.`],
+      9:[`Times 9 is times 10, take away one lot: ${10*k} − ${k} = ${M(9*k)}.`, `Finger trick: hold up 10 fingers and fold down finger number ${k}. The fingers before it are the tens and the fingers after it are the ones.`, 'In the 9 times table the digits add up to 9: 18, 27, 36, 45…']}[n]||[];
+    T.push(...t);
+    if(a!==b) T.push(`Turnaround: ${a} × ${b} is the same as ${b} × ${a}. Use the table you know better.`);
+  }
+  else if(s.strand==='div'){
+    T.push(`Dividing is a times table backwards: ${b} × ? = ${a}.`);
+    if(b===2) T.push(`Dividing by 2 is halving. Half of ${a} is ${M(ans)}.`);
+    if(b===10) T.push('Dividing by 10: take the 0 off the end.');
+    if(b===5) T.push(`Dividing by 5: double it, then divide by 10. ${a} doubled is ${2*a}.`);
+    T.push(`Dividing can mean sharing ${a} equally into ${b} groups, or finding how many ${b}s fit into ${a}. Both give the same answer.`);
+  }
+  else if(s.strand==='frac'){
+    T.push('The bottom number says how many equal pieces the whole is cut into. The top number says how many pieces you have.');
+    if(q.skill==='fhq'){ T.push('One half is the same as two quarters: cut each half in two.'); T.push('Change the halves into quarters first. Then all the pieces are the same size and you can add or take away the top numbers.'); }
+    else T.push(`The bottom numbers are the same, so the pieces are the same size. Just ${op==='+'?'add':'take away'} the top numbers. The bottom number stays ${q.d}!`);
+    T.push('When the top and bottom numbers are the same, like 4/4, you have all the pieces: one whole.');
+  }
+  else if(s.strand==='dec'){
+    T.push(a<10 ? `The digit after the dot is tenths. ${fmtDec(a)} means ${tenths(a)}, like ${a} slice${a===1?'':'s'} of a cake cut into 10.` : `${fmtDec(a)} means ${Math.floor(a/10)} whole and ${tenths(a%10)}.`);
+    T.push('Add or take away the tenths just like ones, then put the dot back.');
+    if(op==='+' && (a%10+b%10)>=10) T.push('10 tenths make 1 whole. If the tenths go past 9, carry 1 over to the wholes.');
+    if(op==='-' && b%10>a%10) T.push('Not enough tenths? Swap 1 whole for 10 tenths, then take away.');
+    if(a>=10 || b>=10) T.push('Line up the dots: wholes under wholes, tenths under tenths.');
+  }
+  return {tricks:T.slice(0,4), life:lifeFor(q)};
+}
+/* a real-life sum, picked the same way each time for the same sum */
+function lifeFor(q){
+  let h=7; for(const c of sumKey(q)) h=(h*31+c.charCodeAt(0))>>>0;
+  const P=arr=>arr[h%arr.length], {a,b,op}=q;
+  if(q.kind==='frac'){ const d=q.d, A=frSay(q.fa.n,q.fa.d), B=frSay(q.fb.n,q.fb.d);
+    if(q.skill==='fhq') return op==='+' ? `You eat ${A} of a sandwich, then ${B} of another sandwich. How much sandwich did you eat?` : `You have ${A} of a cake. You give ${B} of a cake to a friend. How much cake is left?`;
+    return op==='+' ? P([`A pizza is cut into ${d} equal slices. You eat ${q.fa.n} and your friend eats ${q.fb.n}. What part of the pizza is gone?`, `A chocolate bar has ${d} equal pieces. You eat ${A} today and ${B} tomorrow. How much have you eaten?`])
+      : P([`${cap(A)} of a pie is left. You eat ${B}. How much pie is left now?`, `You paint ${A} of a fence, then rain washes off ${B}. How much is still painted?`]); }
+  if(q.kind==='dec'){ const A=fmtDec(a), B=fmtDec(b);
+    return op==='+' ? P([`A ribbon is ${A} metres long. You tie on ${B} metres more. How long is it now?`, `You walk ${A} km to the park, then ${B} km to the shop. How far did you walk?`, `A plant was ${A} m tall and grew ${B} m. How tall is it now?`])
+      : P([`A jug holds ${A} litres of water. You pour out ${B} litres. How much is left?`, `A rope is ${A} m long. You cut off ${B} m. How long is it now?`]); }
+  if(op==='+') return P([`Luna found ${a} pine cones, then ${b} more. How many pine cones does she have?`, `There are ${a} wolves in one pack and ${b} in another. How many wolves altogether?`, `You have $${a} and you earn $${b} more. How much money now?`]);
+  if(op==='-') return P([`There were ${a} stars in the sky. ${b} hid behind a cloud. How many are still shining?`, `You have $${a} and spend $${b}. How much is left?`, `A book has ${a} pages. You have read ${b}. How many pages to go?`]);
+  if(op==='x'){ const n=SK[q.skill].n, k=a===n?b:a;
+    if(n===7) return `There are 7 days in a week. How many days are in ${k} week${k===1?'':'s'}? That’s ${k} × 7.`;
+    return P([`${k} wolf cubs each find ${n} berries. How many berries altogether?`, `${k} packs with ${n} pencils in each. How many pencils?`, `${k} rows of chairs with ${n} chairs in each row. How many chairs?`]); }
+  return P([`${a} berries are shared equally between ${b} wolf cubs. How many does each cub get?`, `${a} cupcakes go into boxes of ${b}. How many boxes do you need?`]);
+}
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+
 /* =================== A round ===================
    One sum at a time. The kinds take turns. A missed sum comes back 3 sums later.
-   "I know it all" banks the whole skill as a full moon and doesn't use up the round. */
+   Every answer is timed quietly (shown only on the Grown-ups page and in speed practice).
+   ❓ Show me how and 💡 Tips teach the sum: a right answer after that gives no moon step (and no step back),
+   and the sum comes back later to try alone. "I know it all" banks the skill as a full moon without using up the round. */
 let sess=null, cur=null, timers=[];
 const later=(fn,ms)=>{ const t=setTimeout(fn,ms); timers.push(t); return t; };
 function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
 const PRAISE=['That’s right!','Well done!','Yes!','You got it!','Great work!','Spot on!'];
+const SPEED_N=8;
 
 function newRound(only){
-  sess={limit:state.perRound, done:0, right:0, only:only||null, retry:[], recent:[], start:{}, kinds:[]};
+  sess={limit:state.perRound, done:0, right:0, skipped:0, only:only||null, retry:[], recent:[], start:{}, speed:false};
   SKILLS.forEach(s=>sess.start[s.id]=phaseOf(s.id));
 }
 function kindsOn(){ const k=STRANDS.filter(s=>state.kinds[s.id]).map(s=>s.id); return k.length?k:STRANDS.map(s=>s.id); }
@@ -441,45 +671,54 @@ function begin(only){
   const first=only?['Let’s practise '+SK[only].name.toLowerCase()+'!',{pause:500}]:['Hi! Let’s fill some moons.',{pause:500}];
   ask(nextSum(), first);
 }
+function beginSpeed(id){
+  hush(); clearTimers(); newRound(id); sess.speed=true; sess.limit=SPEED_N; sess.times=[];
+  say(['Speed practice! Ready, go!'],{noRemember:true});
+  ask(nextSum());
+}
 function ask(q, prefix){
   clearTimers();
   sess.recent.push(sumKey(q)); if(sess.recent.length>8) sess.recent.shift();
-  const p=ptsOf(q.skill);
-  cur={q, mode: p<STEP?'buttons':'pad', typed:'', answered:false, options:null};
+  cur={q, mode:(sess.speed || ptsOf(q.skill)>=STEP)?'pad':'buttons', typed:'', answered:false, options:null, helped:false, timeBad:false, teach:false, tipsOpen:false};
   if(cur.mode==='buttons') cur.options=shuffle([q.ans].concat(wrongOnes(q)));
   view='sum'; render();
-  say((prefix||[]).concat([(q.again?'Try this one again. ':'')+'What is '+sumSpeech(q)+'?']));
+  cur.t0=performance.now();
+  if(!sess.speed) say((prefix||[]).concat([(q.again?'Try this one again. ':'')+'What is '+sumSpeech(q)+'?']));
 }
 function nextOne(){
   hush(); clearTimers();
   if(!sess) return;
+  if(sess.speed) return advanceSpeed();
   if(sess.done>=sess.limit) return finishRound();
   ask(nextSum());
 }
+function pushRetry(q){ const c=JSON.parse(JSON.stringify(q)); delete c.again; sess.retry.push({q:c, at:sess.done+3}); }
 function answer(val){
-  if(!cur || cur.answered) return;
-  const q=cur.q, ok=(+val===q.ans);
-  cur.answered=true; cur.given=+val; cur.ok=ok;
+  if(!cur || cur.answered || val==null || Number.isNaN(val)) return;
+  const q=cur.q, ok=(val===q.ans), ms=performance.now()-cur.t0, timeOk=!cur.helped && !cur.timeBad;
+  cur.answered=true; cur.given=val; cur.ok=ok; cur.teach=false; cur.tipsOpen=false;
+  if(sess.speed) return answerSpeed(ok, ms, timeOk);
   const r=rec(q.skill), before=phaseOf(q.skill);
   r.last=Date.now();
-  if(ok){ r.right++; r.pts=Math.min(FULL, r.pts+1); sess.right++; }
-  else { r.wrong++; const floor=Math.min(FULL, before*STEP); r.pts=Math.max(floor, r.pts-1);
-    sess.retry.push({q:{skill:q.skill,a:q.a,op:q.op,b:q.b,ans:q.ans}, at:sess.done+3}); }
+  if(ok){ sess.right++;
+    if(cur.helped){ r.helped=(r.helped||0)+1; pushRetry(q); }
+    else { r.right++; r.pts=Math.min(FULL, r.pts+1); if(timeOk) r.times=(r.times||[]).concat(Math.round(ms)).slice(-20); } }
+  else { r.wrong++; if(!cur.helped){ const floor=Math.min(FULL, before*STEP); r.pts=Math.max(floor, r.pts-1); } pushRetry(q); }
   const d=state.days[today()]||(state.days[today()]={n:0,right:0}); d.n++; if(ok) d.right++;
   sess.done++;
   const after=phaseOf(q.skill);
   cur.moved = after>before ? after : 0;
+  const line = cur.helped ? 'That’s right! Now you know how.' : pick(PRAISE);
+  cur.praise=line;
   save(); render();
   if(ok){
     chime('good');
-    const line=pick(PRAISE);
-    cur.praise=line;
     if(cur.moved){ later(()=>toast(moonToast(q.skill, after), after===3?'full':'up'), 350); }
     say([line, cur.moved===3?'Full moon! You know '+SK[q.skill].name.toLowerCase()+'!':''].filter(Boolean),{noRemember:true});
-    later(nextOne, cur.moved?2600:1300);
+    later(nextOne, cur.moved?2600:cur.helped?2400:1300);
   } else {
     chime('try');
-    say(['Good try. '+sumSpeech(q)+' is '+q.ans+'.'],{noRemember:true});
+    say(['Good try. '+sumSpeech(q)+' is '+ansSay(q,q.ans)+'.'],{noRemember:true});
   }
 }
 function moonToast(id, ph){ return {html: moon(ph)+' '+PHASE_NAME[ph]+': '+esc(SK[id].name)+'!'}; }
@@ -491,17 +730,87 @@ function knowAll(){
   if(sess.only){ sess.only=null; }      /* that skill is done: carry on with the usual mix */
   later(()=>ask(nextSum()), 600);
 }
-function skipSum(){ if(!cur||cur.answered) return; sess.done++; sess.skipped=(sess.skipped||0)+1; nextOne(); }
+function skipSum(){ if(!cur||cur.answered) return; sess.done++; sess.skipped++; nextOne(); }
 function finishRound(){
   clearTimers(); hush(); view='end'; render();
   say(['Done for today! Great work!'],{noRemember:true});
+}
+function showHow(){
+  if(!cur||cur.answered) return;
+  cur.teach=!cur.teach; if(cur.teach){ cur.helped=true; }
+  render();
+  if(cur.teach){ const m=method(cur.q,false); say(['Here’s how.'].concat(m.lines.map(speakify), ['Now you try!'])); }
+  else hush();
+}
+function openTips(){
+  if(!cur) return;
+  if(!cur.answered) cur.helped=true;
+  cur.tipsOpen=true; render();
+  const t=tipsFor(cur.q, cur.answered);
+  say(['Tips and tricks.'].concat(t.tricks.map(speakify), [{pause:400}, 'In real life: '+speakify(t.life)]),{noRemember:true});
+}
+function closeTips(){ if(!cur) return; cur.tipsOpen=false; hush(); render(); }
+
+/* =================== Speed practice (full moons only) ===================
+   8 sums from one full-moon skill. Timed quietly; the average comes at the end.
+   Every run earns at least one badge, always measured against her own earlier runs, never a set time. */
+const BADGES={
+  first:{e:'🌟',n:'First speed run'},
+  pb:{e:'🏆',n:'New personal best!'},
+  quicker:{e:'📈',n:'Quicker than last time'},
+  lightning:{e:'⚡',n:'Quickest sum ever'},
+  perfect:{e:'✅',n:'8 out of 8'},
+  steady:{e:'🐾',n:'Steady paws: close to your best'},
+  kept:{e:'💪',n:'Kept going'},
+  runs5:{e:'🔥',n:'5 speed runs'}, runs10:{e:'🌙',n:'10 speed runs'}, runs25:{e:'🐺',n:'25 speed runs'}, runs50:{e:'👑',n:'50 speed runs'}
+};
+function answerSpeed(ok, ms, timeOk){
+  sess.done++;
+  if(ok){ sess.right++; if(timeOk) sess.times.push(Math.round(ms)); chime('tick'); } else chime('try');
+  render();
+  later(advanceSpeed, ok?450:1600);
+}
+function advanceSpeed(){ clearTimers(); if(sess.done>=sess.limit) finishSpeed(); else ask(nextSum()); }
+function finishSpeed(){
+  clearTimers(); hush();
+  const id=sess.only, r=rec(id), sp=r.speed||(r.speed={runs:[],best:null,fastest:null,badges:{}});
+  const times=sess.times||[], avg=times.length?times.reduce((x,y)=>x+y,0)/times.length:null, fastest=times.length?Math.min(...times):null;
+  const prev=sp.runs, last=prev[prev.length-1], earned=[], counts=avg!=null && sess.right>=Math.ceil(sess.limit*0.75);
+  if(!prev.length) earned.push('first');
+  if(counts){ if(sp.best==null) sp.best=Math.round(avg); else if(avg<sp.best){ earned.push('pb'); sp.best=Math.round(avg); } }
+  if(avg!=null && last && last.avg!=null && avg<last.avg && !earned.includes('pb')) earned.push('quicker');
+  if(fastest!=null){ if(sp.fastest!=null && fastest<sp.fastest) earned.push('lightning'); if(sp.fastest==null || fastest<sp.fastest) sp.fastest=fastest; }
+  if(sess.done>=sess.limit && sess.right===sess.limit) earned.push('perfect');
+  const n=prev.length+1; if([5,10,25,50].includes(n)) earned.push('runs'+n);
+  if(!earned.length) earned.push(counts && sp.best!=null && avg<=sp.best*1.1 ? 'steady' : 'kept');
+  prev.push({at:Date.now(), avg:avg==null?null:Math.round(avg), right:sess.right, n:sess.done}); if(prev.length>60) prev.shift();
+  earned.forEach(b=>sp.badges[b]=(sp.badges[b]||0)+1);
+  sess.result={id, avg, best:sp.best, earned, right:sess.right, n:sess.done, recent:prev.slice(-5).map(x=>x.avg)};
+  save(); view='speedEnd'; render();
+  say([earned.includes('pb')?'A new personal best!':'Well done!', avg!=null?'Your average was '+secs(avg)+' seconds.':'', 'You earned: '+earned.map(b=>BADGES[b].n.replace(/[:!].*$/,'')).join(', ')+'.'].filter(Boolean),{noRemember:true});
+}
+function renderSpeedEnd(){
+  const R=sess.result, s=SK[R.id];
+  stage.innerHTML=`<section class="hero" style="gap:14px">
+    ${wolfHero('min(130px,34vw)')}
+    <h1>⚡ Speed practice done!</h1>
+    <p class="sub">${esc(s.name)}: ${R.right} of ${R.n} right</p>
+    ${R.avg!=null?`<div class="stat">${secs(R.avg)} seconds</div><p class="sub">your average for a right answer${R.best!=null?` · your best: ${secs(R.best)} s`:''}</p>`:'<p class="sub">No right answers this time. Have another go!</p>'}
+    ${R.recent.filter(x=>x!=null).length>1?`<div class="recent" aria-label="Your last runs">${R.recent.map((x,i)=>x==null?'':`<span class="${i===R.recent.length-1?'now':''}">${secs(x)}</span>`).join('')}</div>`:''}
+    <div class="badges">${R.earned.map(b=>`<div class="badge pop"><span>${BADGES[b].e}</span><b>${esc(BADGES[b].n)}</b></div>`).join('')}</div>
+    <div class="row center"><button class="speedbtn" id="sAgain" type="button">⚡ Go again</button></div>
+    <div class="row center"><button class="soft" id="mm" type="button">🌙 My moons</button><button class="soft" id="home" type="button">Finish</button></div>
+  </section>`;
+  $('#sAgain').onclick=()=>beginSpeed(R.id);
+  $('#mm').onclick=()=>{ sess=null; openMoons('start'); };
+  $('#home').onclick=()=>{ hush(); sess=null; view='start'; render(); };
 }
 
 /* =================== Screens =================== */
 function topBar(){
   const inRound = !!sess && view==='sum';
   $('#exitBtn').hidden=!inRound; $('#rprog').hidden=!inRound; $('#hearBtn').hidden=view!=='sum';
-  if(inRound){ $('#rtext').textContent='Sum '+Math.min(sess.done+(cur&&cur.answered?0:1), sess.limit)+' of '+sess.limit;
+  if(inRound){ $('#rtext').textContent=(sess.speed?'⚡ ':'Sum ')+Math.min(sess.done+(cur&&cur.answered?0:1), sess.limit)+' of '+sess.limit;
     $('#rbar').style.width=Math.round(100*sess.done/Math.max(1,sess.limit))+'%'; }
   $('#moonsBtn').hidden = view==='moons' || view==='grown' || view==='who';
 }
@@ -511,6 +820,7 @@ function render(){
   if(view==='start') return renderStart();
   if(view==='sum') return renderSum();
   if(view==='end') return renderEnd();
+  if(view==='speedEnd') return renderSpeedEnd();
   if(view==='moons') return renderMoons();
   if(view==='grown') return renderGrown();
 }
@@ -564,96 +874,93 @@ function renderStart(){
 }
 
 function renderSum(){
-  const q=cur.q, s=SK[q.skill], st=STRANDS.find(x=>x.id===s.strand), ph=phaseOf(q.skill);
-  const shown = cur.answered ? (cur.ok ? `${sumText(q)} = ${q.ans}` : `${sumText(q)} = ${q.ans}`) : `${sumText(q)} = <span class="q">?</span>`;
+  const q=cur.q, s=SK[q.skill], st=STRANDS.find(x=>x.id===s.strand), ph=phaseOf(q.skill), speed=!!sess.speed;
+  const blankAns = q.kind==='frac' ? frHTML('<span class="q">?</span>', q.d) : '<span class="q">?</span>';
+  const shown = `${sumHTML(q)} = ${cur.answered ? ansHTML(q,q.ans) : blankAns}`;
   let answerHTML='';
   if(cur.mode==='buttons'){
     answerHTML=`<div class="choices">${cur.options.map(v=>{
       let cls=''; if(cur.answered){ if(v===q.ans) cls=' right'; else if(v===cur.given) cls=' wrong'; else cls=' fade'; }
-      return `<button class="choice${cls}" type="button" data-v="${v}" ${cur.answered?'disabled':''}>${v}</button>`; }).join('')}</div>`;
+      return `<button class="choice${cls}" type="button" data-v="${v}" ${cur.answered?'disabled':''}>${ansHTML(q,v)}</button>`; }).join('')}</div>`;
   } else {
-    const box = cur.answered ? (cur.ok ? q.ans : `<s style="color:var(--no)">${cur.given}</s>`) : (cur.typed || '<span class="ph">?</span>');
-    answerHTML=`<div class="ansbox${cur.answered?(cur.ok?' right':' wrong'):''}" id="ansbox">${box}</div>`+
-      (cur.answered?'':`<div class="pad">${['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="key" type="button" data-k="${k}">${k}</button>`).join('')}
-        <button class="key alt" type="button" data-k="back" aria-label="Delete">⌫</button><button class="key" type="button" data-k="0">0</button><button class="key go" type="button" data-k="ok" aria-label="Check" ${cur.typed?'':'disabled'}>✓</button></div>`);
+    answerHTML=`<div class="ansbox${cur.answered?(cur.ok?' right':' wrong'):''}" id="ansbox">${boxHTML()}</div>`;
+    if(!cur.answered){
+      const last = q.kind==='dec'
+        ? `<button class="key alt" type="button" data-k=".">.</button><button class="key" type="button" data-k="0">0</button><button class="key alt" type="button" data-k="back" aria-label="Delete">⌫</button><button class="key go wide3" type="button" data-k="ok" aria-label="Check" ${cur.typed?'':'disabled'}>✓</button>`
+        : `<button class="key alt" type="button" data-k="back" aria-label="Delete">⌫</button><button class="key" type="button" data-k="0">0</button><button class="key go" type="button" data-k="ok" aria-label="Check" ${cur.typed?'':'disabled'}>✓</button>`;
+      answerHTML+=`<div class="pad">${['1','2','3','4','5','6','7','8','9'].map(k=>`<button class="key" type="button" data-k="${k}">${k}</button>`).join('')}${last}</div>`;
+    }
   }
   let fb='';
-  if(cur.answered && cur.ok){
-    fb=`<div class="fb pop"><div class="say good">${esc(cur.praise||'That’s right!')}</div>${cur.moved?`<div class="move">${moon(cur.moved)} <b>${PHASE_NAME[cur.moved]}</b>: ${esc(s.name)}</div>`:''}</div>`;
+  if(cur.answered && speed){
+    fb=cur.ok?'<div class="fb"><div class="say good">✓</div></div>':`<div class="fb"><div class="say try">It’s ${ansHTML(q,q.ans)}.</div></div>`;
+  } else if(cur.answered && cur.ok){
+    fb=`<div class="fb pop"><div class="say good">${esc(cur.praise||'That’s right!')}</div>${cur.helped?'<p class="hint" style="color:var(--muted);font-size:15px">It comes back soon, to try on your own.</p>':''}${cur.moved?`<div class="move">${moon(cur.moved)} <b>${PHASE_NAME[cur.moved]}</b>: ${esc(s.name)}</div>`:''}</div>`;
   } else if(cur.answered){
-    fb=`<div class="fb pop"><div class="say try">Good try! It’s ${q.ans}.</div>${helpHTML(q)}<p class="hint" style="color:var(--muted);font-size:15px">This one comes back soon.</p><button class="big" id="nextBtn" type="button">Next ▶</button></div>`;
+    fb=`<div class="fb pop"><div class="say try">Good try! It’s ${ansHTML(q,q.ans)}.</div>${methodHTML(q,true)}
+      <div class="tools"><button class="toolbtn tip" id="tipBtn" type="button">💡 Tips and tricks</button></div>
+      <p class="hint" style="color:var(--muted);font-size:15px">This one comes back soon.</p><button class="big" id="nextBtn" type="button">Next ▶</button></div>`;
   }
+  const head = speed
+    ? `<div class="qhead"><div class="skilltag">${moon(3)}<span>⚡ Speed practice · ${esc(s.name)}</span></div></div>`
+    : `<div class="qhead"><div class="skilltag">${moon(ph)}<span>${st.emoji} ${esc(s.name)}</span>${pipsHTML(q.skill)}</div>
+      ${cur.answered||ph>=3?'':`<button class="knowall" id="knowAll" type="button">⭐ I know it all</button>`}</div>`;
+  const tools = (!speed && !cur.answered) ? `<div class="tools">
+      <button class="toolbtn" id="howBtn" type="button" aria-pressed="${cur.teach}">❓ ${cur.teach?'Hide help':'Show me how'}</button>
+      <button class="toolbtn tip" id="tipBtn" type="button">💡 Tips</button>
+      <button class="skipbtn" id="skipBtn" type="button">Skip ⏭</button></div>` : '';
   stage.innerHTML=`<section class="stage">
-    <div class="qhead"><div class="skilltag">${moon(ph)}<span>${st.emoji} ${esc(s.name)}</span>${pipsHTML(q.skill)}</div>
-      ${cur.answered||ph>=3?'':`<button class="knowall" id="knowAll" type="button">⭐ I know it all</button>`}</div>
-    ${q.again?'<span class="again-tag">Try again</span>':''}
+    ${head}
+    ${q.again&&!speed?'<span class="again-tag">Try again</span>':''}
     <div class="sum${cur.answered?(cur.ok?' right':' wrong'):''}" id="sumBox">${shown}</div>
+    ${cur.teach && !cur.answered ? methodHTML(q,false,'Here’s how')+'<p class="hint" style="color:var(--muted)">Now you try!</p>' : ''}
     ${answerHTML}
     ${fb}
-    ${cur.answered?'':'<button class="skipbtn" id="skipBtn" type="button">Skip this sum ⏭</button>'}
-  </section>`;
+    ${tools}
+  </section>
+  ${cur.tipsOpen?tipsPopHTML():''}`;
   stage.querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>answer(+b.dataset.v));
   stage.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>typeKey(b.dataset.k));
-  const ka=$('#knowAll'); if(ka) ka.onclick=knowAll;
-  const sk=$('#skipBtn'); if(sk) sk.onclick=skipSum;
-  const nx=$('#nextBtn'); if(nx){ nx.onclick=nextOne; }
+  const on=(sel,fn)=>{ const el=$(sel); if(el) el.onclick=fn; };
+  on('#knowAll',knowAll); on('#skipBtn',skipSum); on('#nextBtn',nextOne); on('#howBtn',showHow); on('#tipBtn',openTips);
+  if(cur.tipsOpen){ on('#tipClose',closeTips); $('#wpop').onclick=ev=>{ if(ev.target.id==='wpop') closeTips(); }; }
   requestAnimationFrame(fitSum);
+}
+function tipsPopHTML(){
+  const t=tipsFor(cur.q, cur.answered);
+  return `<div class="wpop" id="wpop"><div class="popcard tipcard pop" role="dialog" aria-label="Tips and tricks">
+    <h2>💡 Tips and tricks</h2>
+    <ul>${t.tricks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+    <div class="life"><b>In real life:</b> ${esc(t.life)}</div>
+    <div class="row center"><button class="soft" id="tipClose" type="button">✕ Close</button></div>
+  </div></div>`;
+}
+function boxHTML(){
+  const q=cur.q;
+  if(cur.answered) return cur.ok ? ansHTML(q,q.ans) : `<s style="color:var(--no)">${ansHTML(q,cur.given)}</s>`;
+  const t = cur.typed || '<span class="ph">?</span>';
+  return q.kind==='frac' ? frHTML(t, q.d) : t;
 }
 function typeKey(k){
   if(!cur || cur.answered || cur.mode!=='pad') return;
-  if(k==='ok'){ if(cur.typed) answer(cur.typed); return; }
+  const q=cur.q;
+  if(k==='ok'){ if(!cur.typed) return; const v = q.kind==='dec' ? Math.round(parseFloat(cur.typed)*10) : parseInt(cur.typed,10); if(!Number.isNaN(v)) answer(v); return; }
   if(k==='back') cur.typed=cur.typed.slice(0,-1);
-  else if(cur.typed.length<3) cur.typed=(cur.typed==='0'?'':cur.typed)+k;
-  const box=$('#ansbox'); if(box) box.innerHTML=cur.typed||'<span class="ph">?</span>';
+  else if(k==='.'){ if(q.kind!=='dec' || cur.typed.includes('.')) return; cur.typed=(cur.typed||'0')+'.'; }
+  else { const max = q.kind==='frac'?2 : q.kind==='dec'?5 : 3; if(cur.typed.replace('.','').length>=max) return;
+    if(q.kind==='dec' && /\.\d$/.test(cur.typed)) return;            /* one place after the dot */
+    cur.typed=(cur.typed==='0'?'':cur.typed)+k; }
+  const box=$('#ansbox'); if(box) box.innerHTML=boxHTML();
   const go=stage.querySelector('[data-k="ok"]'); if(go) go.disabled=!cur.typed;
-}
-
-/* After a miss: a picture or a short way to work it out. */
-function dotsHTML(groups, size){
-  /* groups: [{n, cls}] laid out in rows of 5, like a ten frame */
-  const all=[]; groups.forEach(g=>{ for(let i=0;i<g.n;i++) all.push(g.cls||''); });
-  const rows=[]; for(let i=0;i<all.length;i+=5){ const r=all.slice(i,i+5);
-    rows.push('<div class="drow">'+r.map(c=>`<span class="d ${c}"></span>`).join('')+'</div>'); }
-  return `<div class="dots" style="--ds:${size||18}px">${rows.join('')}</div>`;
-}
-function arrayHTML(rowsN, colsN){
-  const size = colsN*rowsN>50 ? 10 : colsN>8||rowsN>8 ? 12 : 16;
-  return `<div class="dots" style="--ds:${size}px;gap:${size<12?3:5}px">${Array.from({length:rowsN},()=>'<div class="drow">'+Array.from({length:colsN},()=>'<span class="d"></span>').join('')+'</div>').join('')}</div>`;
-}
-function countHTML(step, to){ const c=[]; for(let v=step; v<=to; v+=step) c.push(`<span class="${v===to?'end':''}">${v}</span>`); return `<div class="count">${c.join('')}</div>`; }
-function helpHTML(q){
-  const {a,b,ans,op}=q, eq=`<div class="eq">${sumText(q)} = ${ans}</div>`;
-  if(op==='+'){
-    if(a<=10 && b<=10) return `<div class="help"><div class="dgroups">${dotsHTML([{n:a}])}<span>+</span>${dotsHTML([{n:b,cls:'b'}])}</div><p>${a} and ${b} more makes ${ans}.</p>${eq}</div>`;
-    if(a%10===0 && b%10===0) return `<div class="help"><p>${a/10} tens + ${b/10} tens = ${ans/10} tens.</p>${eq}</div>`;
-    const big=Math.max(a,b), small=Math.min(a,b);
-    if(small<10){ const ones=big%10, toTen=10-ones;
-      if(ones+small<10) return `<div class="help"><p>Add the ones: ${ones} + ${small} = ${ones+small}.</p>${eq}</div>`;
-      return `<div class="help"><p>${big} + ${toTen} = ${big+toTen}, then ${small-toTen} more is ${ans}.</p>${eq}</div>`; }
-    const t=Math.floor(a/10)*10+Math.floor(b/10)*10, o=a%10+b%10;
-    return `<div class="help"><p>Tens: ${Math.floor(a/10)*10} + ${Math.floor(b/10)*10} = ${t}.<br>Ones: ${a%10} + ${b%10} = ${o}.<br>${t} + ${o} = ${ans}.</p>${eq}</div>`;
-  }
-  if(op==='-'){
-    if(a<=20) return `<div class="help">${dotsHTML([{n:ans},{n:b,cls:'x'}])}<p>Start with ${a}, take away ${b}. ${ans} are left.</p>${eq}</div>`;
-    if(a%10===0 && b%10===0) return `<div class="help"><p>${a/10} tens − ${b/10} tens = ${ans/10} tens.</p>${eq}</div>`;
-    if(b<10){ const ones=a%10;
-      if(b<=ones) return `<div class="help"><p>Take the ones: ${ones} − ${b} = ${ones-b}.</p>${eq}</div>`;
-      return `<div class="help"><p>${a} − ${ones} = ${a-ones}, then take ${b-ones} more: ${ans}.</p>${eq}</div>`; }
-    const tens=Math.floor(b/10)*10, mid=a-tens;
-    return `<div class="help"><p>Take the tens: ${a} − ${tens} = ${mid}.<br>Then the ones: ${mid} − ${b%10} = ${ans}.</p>${eq}</div>`;
-  }
-  if(op==='x'){ const n=SK[q.skill].n, k=a===n?b:a;
-    return `<div class="help">${arrayHTML(k,n)}<p>${k} lot${k===1?'':'s'} of ${n}. Count in ${n}s:</p>${countHTML(n,ans)}${eq}</div>`; }
-  /* dividing */
-  return `<div class="help"><p>How many ${b}s make ${a}? Count in ${b}s:</p>${countHTML(b,a)}<p>That’s ${ans} lot${ans===1?'':'s'} of ${b}.</p>${arrayHTML(ans,b)}${eq}</div>`;
 }
 
 function renderEnd(){
   const ups=SKILLS.filter(s=>sess && phaseOf(s.id)>sess.start[s.id]).map(s=>`<span class="chip">${moon(phaseOf(s.id))} ${esc(s.name)}</span>`).join('');
+  const answered=sess?sess.done-sess.skipped:0;
   stage.innerHTML=`<section class="hero">
     ${wolfHero('min(180px,46vw)')}
     <h1>Done for today!</h1>
-    <p class="sub">${sess&&sess.done>(sess.skipped||0)?`${sess.right} right out of ${sess.done-(sess.skipped||0)}.`:''}${ups?' Your moons grew:':''}</p>
+    <p class="sub">${answered>0?`${sess.right} right out of ${answered}.`:''}${ups?' Your moons grew:':''}</p>
     ${ups?`<div class="chips">${ups}</div>`:''}
     <div class="row center"><button class="big" id="again" type="button">One more round</button></div>
     <div class="row center"><button class="soft" id="mm" type="button">🌙 My moons</button><button class="soft" id="home" type="button">Finish</button></div>
@@ -663,9 +970,10 @@ function renderEnd(){
   $('#home').onclick=()=>{ hush(); sess=null; view='start'; render(); };
 }
 
-/* My moons: every skill, grouped by kind. Tap one to practise it, or to say "I know it all". */
+/* My moons: every skill, grouped by kind. Tap one to practise it, or to say "I know it all".
+   A full moon also offers ⚡ Speed practice (the only way in). */
 let moonsFrom='start', popSkill=null, startArmed=null;
-function openMoons(from){ hush(); clearTimers(); moonsFrom=from; popSkill=null; view='moons'; render(); window.scrollTo(0,0); }
+function openMoons(from){ hush(); clearTimers(); if(cur && view==='sum') cur.timeBad=true; moonsFrom=from; popSkill=null; view='moons'; render(); window.scrollTo(0,0); }
 function renderMoons(){
   stage.innerHTML=`<section class="stage" style="align-items:flex-start;text-align:left"><h2>🌙 My moons</h2><p style="color:var(--muted);font-size:16px">Tap a moon to practise it.</p></section>
     ${STRANDS.map(st=>{ const nx=nextOf(st.id);
@@ -676,27 +984,36 @@ function renderMoons(){
   stage.querySelectorAll('[data-sk]').forEach(b=>b.onclick=()=>{ popSkill=b.dataset.sk; startArmed=null; render(); });
   $('#back').onclick=closeMoons;
   if(popSkill){
-    const id=popSkill;
+    const id=popSkill, on=(sel,fn)=>{ const el=$(sel); if(el) el.onclick=fn; };
     $('#wpop').onclick=ev=>{ if(ev.target.id==='wpop'){ popSkill=null; render(); } };
-    $('#pPrac').onclick=()=>{ popSkill=null; begin(id); };
-    const ka=$('#pKnow'); if(ka) ka.onclick=()=>{ const r=rec(id); r.pts=FULL; r.trusted=1; save(); toast('⭐ '+SK[id].name+': full moon!','full'); popSkill=null; render(); };
-    const ag=$('#pAgain'); if(ag) ag.onclick=()=>{ if(startArmed!==id){ startArmed=id; render(); return; } startArmed=null; state.skills[id]={pts:0,right:0,wrong:0,trusted:0,last:0}; save(); popSkill=null; render(); };
-    $('#pClose').onclick=()=>{ popSkill=null; render(); };
+    on('#pPrac',()=>{ popSkill=null; begin(id); });
+    on('#pSpeed',()=>{ popSkill=null; beginSpeed(id); });
+    on('#pKnow',()=>{ const r=rec(id); r.pts=FULL; r.trusted=1; save(); toast('⭐ '+SK[id].name+': full moon!','full'); popSkill=null; render(); });
+    on('#pAgain',()=>{ if(startArmed!==id){ startArmed=id; render(); return; } startArmed=null; const sp=state.skills[id]&&state.skills[id].speed; state.skills[id]={pts:0,right:0,wrong:0,trusted:0,last:0}; if(sp) state.skills[id].speed=sp; save(); popSkill=null; render(); });
+    on('#pClose',()=>{ popSkill=null; render(); });
   }
 }
 function popHTML(id){
-  const s=SK[id], ph=phaseOf(id), r=state.skills[id];
+  const s=SK[id], ph=phaseOf(id), r=state.skills[id], sp=r&&r.speed;
+  const shelf = sp && Object.keys(sp.badges).length ? `<div class="shelf" aria-label="Speed badges">${Object.entries(sp.badges).map(([k,c])=>BADGES[k]?`<span title="${esc(BADGES[k].n)}">${BADGES[k].e}${c>1?`<small>×${c}</small>`:''}</span>`:'').join('')}</div>` : '';
   return `<div class="wpop" id="wpop"><div class="popcard pop" role="dialog" aria-label="${esc(s.name)}">
     ${moon(ph)}<h2>${esc(s.name)}</h2><div class="ex">${esc(s.ex)}</div>
     <p style="color:var(--muted)">${PHASE_NAME[ph]}${ph<3?` · ${ptsOf(id)} of ${FULL} right to a full moon`:''}${r&&r.trusted?' · you said you know it':''}</p>
-    <button class="big" id="pPrac" type="button">▶ Practise this</button>
+    ${ph===3?`<button class="speedbtn" id="pSpeed" type="button">⚡ Speed practice</button>
+      ${sp&&sp.runs.length?`<p style="color:var(--muted);font-size:15px">${sp.best!=null?`Your best: ${secs(sp.best)} s · `:''}${sp.runs.length} speed run${sp.runs.length===1?'':'s'}</p>`:'<p style="color:var(--muted);font-size:15px">8 quick sums. See how fast you are, and earn a badge.</p>'}
+      ${shelf}`:''}
+    <button class="${ph===3?'soft':'big'}" id="pPrac" type="button">▶ Practise this</button>
     <div class="row center">${ph<3?'<button class="knowall" id="pKnow" type="button">⭐ I know it all</button>':''}<button class="soft" id="pClose" type="button">✕ Close</button></div>
     ${ptsOf(id)>0?`<button class="small${startArmed===id?' danger':''}" id="pAgain" type="button">${startArmed===id?'Tap again to empty this moon':'Start this moon again'}</button>`:''}
   </div></div>`;
 }
 function closeMoons(){
   popSkill=null;
-  if(moonsFrom==='sum' && sess && cur){ view='sum'; render(); if(!cur.answered) say(['What is '+sumSpeech(cur.q)+'?']); else if(cur.ok) later(nextOne,800); return; }
+  if(moonsFrom==='sum' && sess && cur){ view='sum'; render();
+    if(!cur.answered){ if(!sess.speed) say(['What is '+sumSpeech(cur.q)+'?']); }
+    else if(sess.speed) later(advanceSpeed,500);
+    else if(cur.ok) later(nextOne,800);
+    return; }
   if(moonsFrom==='end' && sess){ view='end'; render(); return; }
   view=who?'start':'who'; render();
 }
@@ -708,9 +1025,11 @@ function renderGrown(){
   const days=Object.keys(state.days).sort().slice(-7).reverse();
   stage.innerHTML=`<section class="stage" style="align-items:flex-start;text-align:left"><h2>Grown-ups</h2></section>
   <div class="panel"><h3>How it works</h3>
-    <p>One sum at a time. The four kinds take turns (adding, taking away, times tables, dividing), each at its next skill. A new skill has three big answer buttons; once she has ${STEP} right it switches to a number pad.</p>
+    <p>One sum at a time. The kinds take turns (adding, taking away, times tables, dividing, fractions, decimals), each at its next skill. A new skill has three big answer buttons; once she has ${STEP} right it switches to a number pad.</p>
     <p>Moon: ${moon(0)} new → ${moon(1)} ${STEP} right → ${moon(2)} ${2*STEP} right → ${moon(3)} ${FULL} right. A miss takes one step back, but never below the moon she already has. A missed sum shows a picture or a way to work it out, and comes back 3 sums later.</p>
-    <p>⭐ I know it all makes the skill a full moon at once (trusted, no test) and doesn't use up the round. Skip moves on with no credit. In 🌙 My moons she can practise any skill.</p>
+    <p>❓ Show me how gives the steps for that sum (the last answer left as ?). 💡 Tips gives tricks, other ways to think about it and a real-life example. After either, a right answer gives no moon step and no step back, and the sum comes back later to try alone.</p>
+    <p>⭐ I know it all makes the skill a full moon at once (trusted, no test) and doesn't use up the round. Skip moves on with no credit.</p>
+    <p>Every answer is timed quietly (she never sees a clock). On a full moon in 🌙 My moons she can start ⚡ Speed practice: 8 sums, then her average time and at least one badge, always measured against her own earlier runs (personal best, quicker than last time, quickest sum ever, 8 out of 8, steady, kept going, and 5/10/25/50 runs). A personal best needs at least 6 of 8 right.</p>
     <p>Progress is saved on this device, per name. To move it to another phone or browser, use Backup below.</p></div>
   <div class="panel"><h3>Luna's voice</h3><p>${esc(voiceNote())}</p>
     ${dvList.length?`<p>Pick the voice that sounds best on this device (tap to hear it):</p><div class="row">${dvList.map((v,i)=>`<button class="pill" type="button" data-dv="${i}" aria-pressed="${bVoice===v}">${esc(shortVoice(v))}</button>`).join('')}</div>`:''}
@@ -720,8 +1039,8 @@ function renderGrown(){
   <div class="panel"><h3>Sums in a round</h3><div class="row">${[8,12,16,24].map(n=>`<button class="pill" type="button" data-per="${n}" aria-pressed="${state.perRound===n}">${n}</button>`).join('')}</div></div>
   <div class="panel"><h3>Kinds of sums</h3><p>Turn a kind off to leave it out of rounds. It can still be practised from My moons.</p>
     <div class="row">${STRANDS.map(s=>`<button class="pill" type="button" data-kind="${s.id}" aria-pressed="${!!state.kinds[s.id]}">${s.emoji} ${esc(s.name)}</button>`).join('')}</div></div>
-  <div class="panel"><h3>Her moons</h3><div class="slist">${SKILLS.map(s=>{ const r=state.skills[s.id]; const ph=phaseOf(s.id);
-      return `<div>${moon(ph)} <b>${esc(s.name)}</b> <span>${PHASE_NAME[ph]}${r?` · ${r.right} right, ${r.wrong} missed${r.trusted?' · said “I know it all”':''}`:''}</span></div>`; }).join('')}</div>
+  <div class="panel"><h3>Her moons</h3><p>Typical time is the middle of her last 10 right answers (not counting help, or sums where she left the screen).</p><div class="slist">${SKILLS.map(s=>{ const r=state.skills[s.id]; const ph=phaseOf(s.id); const med=r&&median((r.times||[]).slice(-10)); const sp=r&&r.speed;
+      return `<div>${moon(ph)} <b>${esc(s.name)}</b> <span>${PHASE_NAME[ph]}${r?` · ${r.right} right, ${r.wrong} missed${r.helped?`, ${r.helped} with help`:''}${med!=null?` · typical ${secs(med)} s`:''}${sp&&sp.runs.length?` · speed best ${sp.best!=null?secs(sp.best)+' s':'–'} (${sp.runs.length} runs)`:''}${r.trusted?' · said “I know it all”':''}`:''}</span></div>`; }).join('')}</div>
     ${days.length?`<p>Last days: ${days.map(d=>`${d.slice(5)}: ${state.days[d].right}/${state.days[d].n}`).join(' · ')}</p>`:''}</div>
   <div class="panel"><h3>Backup</h3><p>A backup code holds every name’s moons. Copy it to keep progress safe, or to move it to another phone or browser: open Maths Moon there, paste the code below and tap Load backup.</p>
     <div class="row"><button class="pill" type="button" id="bkCopy">Copy backup code</button><span id="bkMsg" style="color:var(--muted);font-size:14px"></span></div><div id="bkBox"></div>
@@ -735,7 +1054,7 @@ function renderGrown(){
   stage.querySelectorAll('[data-dv]').forEach(b=>b.onclick=()=>{ const v=dvList[+b.dataset.dv]; if(!v) return; bVoice=v; state.deviceVoice=v.name; save(); render(); browserSay(['Hi! I’m Luna. What is 3 plus 4?']); });
   $('#rate').onchange=ev=>{ state.rate=+ev.target.value; save(); say(['This is my new speed.'],{noRemember:true}); };
   $('#soundT').onclick=()=>{ state.sound=!state.sound; if(!state.sound) hush(); save(); render(); };
-  stage.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{ state.perRound=+b.dataset.per; if(sess) sess.limit=state.perRound; save(); render(); });
+  stage.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{ state.perRound=+b.dataset.per; if(sess&&!sess.speed) sess.limit=state.perRound; save(); render(); });
   stage.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{ const k=b.dataset.kind; state.kinds[k]=!state.kinds[k]; if(!STRANDS.some(s=>state.kinds[s.id])) state.kinds[k]=true; save(); render(); });
   $('#bkCopy').onclick=()=>{ const txt=backupCode(); const done=()=>{ $('#bkMsg').textContent='Copied. Keep it somewhere safe, like an email to yourself.'; };
     try{ navigator.clipboard.writeText(txt).then(done,()=>bkShow(txt)); }catch(e){ bkShow(txt); } };
@@ -785,40 +1104,46 @@ function loadBackup(d){
   return n;
 }
 function bkShow(txt){ $('#bkBox').innerHTML='<textarea readonly></textarea>'; const t=$('#bkBox textarea'); t.value=txt; t.focus(); t.select(); $('#bkMsg').textContent='Select all and copy.'; }
-function openGrown(){ clearTimers(); hush(); afterGrown={view}; resetArmed=false; whoArmed=null; view='grown'; render(); window.scrollTo(0,0); }
+function openGrown(){ clearTimers(); hush(); if(cur && view==='sum') cur.timeBad=true; afterGrown={view}; resetArmed=false; whoArmed=null; view='grown'; render(); window.scrollTo(0,0); }
 function closeGrown(){
   const a=afterGrown||{view:'start'}; afterGrown=null;
   if(!who){ view='who'; return render(); }
-  if(a.view==='sum' && sess && cur){ view='sum'; render(); if(cur.answered){ if(cur.ok) later(nextOne,800); } else say(['What is '+sumSpeech(cur.q)+'?']); return; }
+  if(a.view==='sum' && sess && cur){ view='sum'; render();
+    if(cur.answered){ if(sess.speed) later(advanceSpeed,500); else if(cur.ok) later(nextOne,800); }
+    else if(!sess.speed) say(['What is '+sumSpeech(cur.q)+'?']);
+    return; }
   if(a.view==='end' && sess){ view='end'; return render(); }
+  if(a.view==='speedEnd' && sess && sess.result){ view='speedEnd'; return render(); }
   if(a.view==='moons'){ view='moons'; return render(); }
   view='start'; render();
 }
 
 /* hold to open (stops her opening it by accident); Enter or Space also opens it */
 (function(){
-  const b=$('#grownBtn'), fill=$('#grownFill'); let t0=0, raf=0;
-  const stop=()=>{ cancelAnimationFrame(raf); t0=0; fill.style.width='0'; };
-  const step=()=>{ const p=Math.min(1,(performance.now()-t0)/1200); fill.style.width=(p*100)+'%'; if(p>=1){ stop(); if(view!=='grown') openGrown(); } else raf=requestAnimationFrame(step); };
+  const b=$('#grownBtn'), fillEl=$('#grownFill'); let t0=0, raf=0;
+  const stop=()=>{ cancelAnimationFrame(raf); t0=0; fillEl.style.width='0'; };
+  const step=()=>{ const p=Math.min(1,(performance.now()-t0)/1200); fillEl.style.width=(p*100)+'%'; if(p>=1){ stop(); if(view!=='grown') openGrown(); } else raf=requestAnimationFrame(step); };
   b.addEventListener('pointerdown',e=>{ e.preventDefault(); t0=performance.now(); raf=requestAnimationFrame(step); });
   ['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,stop));
   b.addEventListener('click',e=>{ if(e.detail===0 && view!=='grown') openGrown(); });
   b.addEventListener('contextmenu',e=>e.preventDefault());
 })();
-$('#hearBtn').onclick=()=>{ if(lastLines.length) say(lastLines,{noRemember:true}); };
+$('#hearBtn').onclick=()=>{ if(sess && sess.speed && cur && !cur.answered) say(['What is '+sumSpeech(cur.q)+'?'],{noRemember:true}); else if(lastLines.length) say(lastLines,{noRemember:true}); };
 $('#stopBtn').onclick=hush;
-$('#exitBtn').onclick=()=>{ hush(); clearTimers(); if(sess) finishRound(); else { view='start'; render(); } };
-$('#moonsBtn').onclick=()=>{ if(view==='sum'){ clearTimers(); } openMoons(view==='sum'?'sum':view); };
+$('#exitBtn').onclick=()=>{ hush(); clearTimers(); if(sess && sess.speed){ if(sess.done>0) finishSpeed(); else { sess=null; openMoons('start'); } } else if(sess) finishRound(); else { view='start'; render(); } };
+$('#moonsBtn').onclick=()=>{ if(view==='sum'){ clearTimers(); } openMoons(view==='sum'?'sum':view==='speedEnd'?'start':view); };
 
-/* keyboard: digits, Backspace and Enter on the number pad; Enter for Next */
+/* keyboard: digits, dot, Backspace and Enter on the number pad; Enter for Next; Esc closes pop-ups */
 document.addEventListener('keydown',ev=>{
   if(ev.ctrlKey||ev.metaKey||ev.altKey) return;
   if(ev.target && /INPUT|TEXTAREA/.test(ev.target.tagName)) return;
   if(view==='moons' && popSkill && ev.key==='Escape'){ ev.preventDefault(); popSkill=null; render(); return; }
   if(view!=='sum'||!cur) return;
-  if(cur.answered){ if(ev.key==='Enter' && !cur.ok){ ev.preventDefault(); nextOne(); } return; }
+  if(cur.tipsOpen){ if(ev.key==='Escape'){ ev.preventDefault(); closeTips(); } return; }
+  if(cur.answered){ if(ev.key==='Enter' && !cur.ok && !sess.speed){ ev.preventDefault(); nextOne(); } return; }
   if(cur.mode==='pad'){
     if(/^[0-9]$/.test(ev.key)){ ev.preventDefault(); typeKey(ev.key); }
+    else if(ev.key==='.'||ev.key===','){ ev.preventDefault(); typeKey('.'); }
     else if(ev.key==='Backspace'){ ev.preventDefault(); typeKey('back'); }
     else if(ev.key==='Enter'){ ev.preventDefault(); typeKey('ok'); }
   }
@@ -832,7 +1157,7 @@ function fitSum(){
 window.addEventListener('resize',()=>requestAnimationFrame(fitSum));
 
 /* offline helper on the website (not when opened as a file) */
-const SW_VERSION='202611150056';
+const SW_VERSION='202611150132';
 if('serviceWorker' in navigator && location.protocol==='https:'){ addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js?v='+SW_VERSION).catch(()=>{}); }); }
 
 appReady=true;

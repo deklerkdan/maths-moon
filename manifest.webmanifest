@@ -1,7 +1,7 @@
 {
   "name": "Luna's Maths Moon",
   "short_name": "Maths Moon",
-  "description": "A maths game: adding, taking away, times tables and dividing. Fill the moon.",
+  "description": "A maths game: adding, taking away, times tables, dividing, fractions and decimals. Fill the moon.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
